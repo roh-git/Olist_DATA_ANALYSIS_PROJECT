@@ -9,9 +9,26 @@
 
 ## 요약
 
-기존 분석 코드 `analysis/segmentation_and_reviews.py`를 수정했다. 이번 커밋에서 새로 추가한 코드 변경은 **30일 재구매 지표 계산과 군집별 집계**이며, 기존 데이터 결합 방식이나 K-Means 입력 변수·전처리·학습 결과는 변경하지 않았다.
+팀의 기본 분석 노트북인 `Olist_Analysis.ipynb`의 RFM 구간에 검증된 고객 세분화 로직을 직접 반영했다. 별도 재현용 코드인 `analysis/segmentation_and_reviews.py`에도 동일한 30일 재구매 지표가 구현되어 있다.
 
 최적 `k`를 계산하는 Elbow와 Silhouette 결합 로직은 작업 시작 시점의 최신 `main`에 이미 포함되어 있었다. 이번 작업에서는 해당 로직을 원본 데이터로 다시 실행하고 결과가 재현되는지 검증했다.
+
+## 기본 노트북 변경사항
+
+대상 파일: `Olist_Analysis.ipynb`
+
+기존 RFM 구간의 Monetary는 결제·상품·리뷰가 결합된 `olist_df`에서 바로 합산해 주문의 결제액이 상품 수만큼 반복될 가능성이 있었다. 해당 구간을 다음 흐름으로 교체했다.
+
+1. 결제, 상품 카테고리, 리뷰를 각각 주문 단위로 선집계
+2. 주문당 한 행인 `order_level` 생성 및 주문 ID 유일성 검증
+3. 고객별 Recency, Frequency, Monetary 계산
+4. 첫 주문의 카테고리 수와 리뷰 점수 결합
+5. Monetary 상위 1%를 거리 계산에서만 상한 처리한 뒤 로그 변환과 표준화
+6. `k=2~8`의 Inertia와 Silhouette score 계산 및 그래프 출력
+7. Elbow·Silhouette 결합 점수와 최소 군집 300명 조건으로 최종 `k=4` 선택
+8. 최종 군집별 고객 프로필과 30일 재구매율 출력
+
+사용하지 않던 `sklearn-pandas` 설치 셀은 제거했다. 노트북의 기존 문제 정의, 가설별 EDA, 로지스틱 회귀 셀은 변경하지 않았다.
 
 ## 기존 분석 코드에서 수정한 부분
 
@@ -116,4 +133,3 @@ python analysis/segmentation_and_reviews.py --data-dir data --output-dir analysi
 - 결합 점수 최고점 및 최종 선택 `k=4` 확인
 - 군집 고객 합계 92,718명 확인
 - 군집별 30일 재구매 고객 합계 581명 확인
-
