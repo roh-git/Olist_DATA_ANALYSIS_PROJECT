@@ -31,8 +31,9 @@ Olist 구매 데이터에서 고객의 3.04%만 두 번 이상 주문했다. 데
 - 첫 주문의 상품·카테고리·리뷰도 주문 단위로 먼저 집계했다.
 - Monetary 상위 1% 고객을 삭제하지 않고 군집 거리 계산에서만 상한 처리했다.
 - 첫 주문 리뷰 또는 카테고리 정보가 없는 고객은 군집 분석 대상에서 분리했다.
-- `k=2~8`의 Silhouette, Davies–Bouldin, Calinski–Harabasz와 최소 군집 크기를 비교했다.
-- 최고 Silhouette의 95% 이내 후보 중 Davies–Bouldin이 가장 낮은 `k=4`를 선택했다.
+- `k=2~8`의 Elbow와 Silhouette를 중심으로 Davies–Bouldin, Calinski–Harabasz와 최소 군집 크기도 함께 확인했다.
+- 단독 Elbow는 `k=5`, 단독 Silhouette 최고점은 `k=2`였다.
+- 정규화된 엘보우 강도와 Silhouette 최고점 유지율의 기하평균을 계산한 결과 `k=4`가 가장 높아 최종 군집 수로 선택했다.
 
 분석 대상은 92,718명이다.
 

@@ -10,8 +10,9 @@ python analysis/segmentation_and_reviews.py --data-dir data --output-dir analysi
 2. 고객별 Recency, Frequency, Monetary를 계산한다.
 3. 첫 주문의 카테고리 수와 리뷰 점수를 결합한다.
 4. `k=2~8`의 Silhouette, Davies–Bouldin, Calinski–Harabasz, Inertia를 비교한다.
-5. 최고 Silhouette의 95% 이내이면서 최소 군집 300명 조건을 만족하는 후보 중 Davies–Bouldin이 가장 낮은 해를 선택한다.
-6. 선택된 군집별 평균과 중앙값을 산출한다.
-7. 리뷰 ID로 중복을 제거하고 포르투갈어 키워드 규칙으로 저평점 불만을 멀티라벨 분류한다.
+5. 정규화된 Inertia 곡선과 양 끝점을 잇는 직선 사이의 거리로 엘보우 강도를 계산한다.
+6. 엘보우 강도와 Silhouette 최고점 유지율의 기하평균이 가장 높은 해를 선택한다.
+7. 선택된 군집별 평균과 중앙값을 산출한다.
+8. 리뷰 ID로 중복을 제거하고 포르투갈어 키워드 규칙으로 저평점 불만을 멀티라벨 분류한다.
 
 `analysis/results`의 CSV와 Markdown 결과는 실행으로 재생성할 수 있다. 리뷰 유형은 서로 중복될 수 있으므로 유형별 건수 합계가 전체 리뷰보다 클 수 있다.

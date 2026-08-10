@@ -213,16 +213,42 @@ def select_k_and_cluster(
             }
         )
     validation = pd.DataFrame(rows)
-    # Silhouette is the primary selection criterion. A minimum cluster size avoids
-    # selecting a numerically attractive but operationally unusable micro-cluster.
+    # Quantify the elbow as the perpendicular/vertical distance between each
+    # normalized inertia point and the straight line joining the first and last
+    # candidates. Combine its relative strength with silhouette retention. The
+    # geometric mean penalizes a k that is strong on only one of the two criteria.
+    normalized_k = (validation["k"] - validation["k"].min()) / (
+        validation["k"].max() - validation["k"].min()
+    )
+    normalized_inertia = (validation["inertia"] - validation["inertia"].min()) / (
+        validation["inertia"].max() - validation["inertia"].min()
+    )
+    validation["inertia_drop_pct"] = validation["inertia"].pct_change().mul(-100)
+    validation["elbow_distance"] = (1 - normalized_k) - normalized_inertia
+    max_elbow_distance = validation["elbow_distance"].max()
+    validation["elbow_strength"] = (
+        validation["elbow_distance"] / max_elbow_distance
+        if max_elbow_distance > 0
+        else 0.0
+    )
+    validation["silhouette_retention"] = (
+        validation["silhouette"] / validation["silhouette"].max()
+    )
+    validation["elbow_silhouette_score"] = np.sqrt(
+        validation["elbow_strength"].clip(lower=0)
+        * validation["silhouette_retention"].clip(lower=0)
+    )
+
+    # A minimum cluster size avoids selecting a numerically attractive but
+    # operationally unusable micro-cluster.
     eligible = validation[validation["smallest_cluster"] >= 300]
     if eligible.empty:
         eligible = validation
-    best_silhouette = float(eligible["silhouette"].max())
-    near_best = eligible[eligible["silhouette"] >= best_silhouette * 0.95]
-    selected_k = int(near_best.sort_values(
-        ["davies_bouldin", "calinski_harabasz"], ascending=[True, False]
-    ).iloc[0]["k"])
+    selected_k = int(
+        eligible.sort_values(
+            ["elbow_silhouette_score", "silhouette"], ascending=[False, False]
+        ).iloc[0]["k"]
+    )
     modeled["Cluster"] = fitted[selected_k][1]
 
     profile = modeled.groupby("Cluster", as_index=False).agg(
@@ -268,15 +294,20 @@ def select_k_and_cluster(
     selection = {
         "selected_k": selected_k,
         "selection_rule": (
-            "lowest Davies-Bouldin among solutions within 95% of best sampled "
-            "silhouette and min cluster >= 300"
+            "highest geometric mean of normalized elbow strength and silhouette "
+            "retention among solutions with min cluster >= 300"
         ),
+        "elbow_k": int(validation.loc[validation["elbow_distance"].idxmax(), "k"]),
+        "silhouette_k": int(validation.loc[validation["silhouette"].idxmax(), "k"]),
         "modeled_customers": int(len(modeled)),
         "excluded_without_first_review": no_review_count,
         "excluded_missing_first_category": missing_category_count,
         "monetary_cap_p99_for_distance_only": float(customers["Monetary"].quantile(0.99)),
     }
-    return modeled, profile, {"selection": selection, "validation": rows}
+    return modeled, profile, {
+        "selection": selection,
+        "validation": validation.to_dict(orient="records"),
+    }
 
 
 def classify_review_issues(
@@ -367,7 +398,9 @@ def write_markdown_report(
         f"- 분석 고객: {clustering['selection']['modeled_customers']:,}",
         f"- 첫 주문 리뷰 부재로 제외: {clustering['selection']['excluded_without_first_review']:,}",
         f"- 첫 주문 카테고리 부재로 제외: {clustering['selection']['excluded_missing_first_category']:,}",
-        "- 선택 기준: 최고 표본 Silhouette의 95% 이내이면서 최소 군집 300명 조건을 만족하는 후보 중 Davies–Bouldin이 가장 낮은 해",
+        f"- 단독 엘보우 기준 k: {clustering['selection']['elbow_k']}",
+        f"- 단독 Silhouette 기준 k: {clustering['selection']['silhouette_k']}",
+        "- 최종 선택 기준: 정규화한 엘보우 강도와 Silhouette 최고점 유지율의 기하평균이 가장 높은 해",
         "- Monetary 상위 1% 값은 고객을 삭제하지 않고 군집 거리 계산에서만 상한 처리",
         "",
         "## 군집 프로필",
