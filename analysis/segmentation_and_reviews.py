@@ -132,6 +132,25 @@ def build_customer_features(data_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame,
         raise ValueError("order_level must contain exactly one row per order")
 
     snapshot = order_level["order_purchase_timestamp"].max() + pd.Timedelta(days=1)
+    observation_end = order_level["order_purchase_timestamp"].max()
+    purchase_dates = (
+        order_level.assign(
+            purchase_date=order_level["order_purchase_timestamp"].dt.normalize()
+        )
+        .dropna(subset=["purchase_date"])
+        [["customer_unique_id", "purchase_date"]]
+        .drop_duplicates()
+        .sort_values(["customer_unique_id", "purchase_date"])
+    )
+    first_dates = purchase_dates.groupby("customer_unique_id")["purchase_date"].transform("min")
+    purchase_dates["days_after_first"] = (purchase_dates["purchase_date"] - first_dates).dt.days
+    repurchase_30d = purchase_dates.groupby("customer_unique_id", as_index=False).agg(
+        first_purchase_date=("purchase_date", "min"),
+        target_30d=("days_after_first", lambda days: bool(days.between(1, 30).any())),
+    )
+    repurchase_30d["target_30d_eligible"] = (
+        repurchase_30d["first_purchase_date"] <= observation_end - pd.Timedelta(days=30)
+    )
     customer_rfm = order_level.groupby("customer_unique_id", as_index=False).agg(
         Recency=("order_purchase_timestamp", lambda x: (snapshot - x.max()).days),
         Frequency=("order_id", "nunique"),
@@ -145,6 +164,8 @@ def build_customer_features(data_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame,
     )
     customer_features = customer_rfm.merge(
         first_orders, on="customer_unique_id", how="inner", validate="one_to_one"
+    ).merge(
+        repurchase_30d, on="customer_unique_id", how="left", validate="one_to_one"
     )
 
     quality = {
@@ -155,6 +176,12 @@ def build_customer_features(data_dir: Path) -> tuple[pd.DataFrame, pd.DataFrame,
         "customers_with_review": int(customer_features["review_score"].notna().sum()),
         "review_coverage": float(customer_features["review_score"].notna().mean()),
         "repeat_customer_rate": float(customer_features["Frequency"].gt(1).mean()),
+        "target_30d_eligible_customers": int(customer_features["target_30d_eligible"].sum()),
+        "target_30d_repurchase_rate": float(
+            customer_features.loc[
+                customer_features["target_30d_eligible"], "target_30d"
+            ].mean()
+        ),
         "multi_category_rate": float(customer_features["category_count"].gt(1).mean()),
         "monetary_total": float(customer_features["Monetary"].sum()),
         "included_order_payment_total": float(order_level["order_payment"].sum()),
@@ -261,6 +288,16 @@ def select_k_and_cluster(
         category_count_mean=("category_count", "mean"),
         review_score_mean=("review_score", "mean"),
     )
+    repurchase_profile = (
+        modeled[modeled["target_30d_eligible"]]
+        .groupby("Cluster", as_index=False)
+        .agg(
+            target_30d_eligible_customers=("customer_unique_id", "nunique"),
+            target_30d_repurchase_customers=("target_30d", "sum"),
+            target_30d_repurchase_rate=("target_30d", "mean"),
+        )
+    )
+    profile = profile.merge(repurchase_profile, on="Cluster", how="left", validate="one_to_one")
     profile["customer_share"] = profile["customers"] / len(modeled)
     profile = profile.round(4)
     if len(profile) == 4:
@@ -388,6 +425,8 @@ def write_markdown_report(
         f"- 전체 고객 수: {quality['customers']:,}",
         f"- 첫 주문 리뷰 보유 고객: {quality['customers_with_review']:,} ({quality['review_coverage']:.1%})",
         f"- 반복 구매 고객 비율: {quality['repeat_customer_rate']:.2%}",
+        f"- 30일 재구매 관찰 가능 고객: {quality['target_30d_eligible_customers']:,}",
+        f"- 전체 30일 재구매율: {quality['target_30d_repurchase_rate']:.2%}",
         f"- 다중 카테고리 첫 구매 고객 비율: {quality['multi_category_rate']:.2%}",
         f"- 고객 합산 결제액과 분석 포함 주문 결제액 차이: {quality['monetary_total'] - quality['included_order_payment_total']:,.2f}",
         f"- 취소·불가 주문을 포함한 전체 원 결제액: {quality['raw_payment_total']:,.2f}",
@@ -404,6 +443,8 @@ def write_markdown_report(
         "- Monetary 상위 1% 값은 고객을 삭제하지 않고 군집 거리 계산에서만 상한 처리",
         "",
         "## 군집 프로필",
+        "",
+        "`target_30d`는 첫 구매 후 1~30일의 서로 다른 구매일이 있는 경우이며, 데이터 종료일까지 30일 관찰 가능한 고객만 분모에 포함한다.",
         "",
         profile.to_markdown(index=False),
         "",
