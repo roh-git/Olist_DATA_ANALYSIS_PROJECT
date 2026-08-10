@@ -1,5 +1,0 @@
-Cluster,Segment,customers,recency_mean,recency_median,frequency_mean,monetary_mean,monetary_median,category_count_mean,review_score_mean,target_30d_eligible_customers,target_30d_repurchase_customers,target_30d_repurchase_rate,customer_share
-0,고평점 장기 미방문군,54161,301.1023,281.0,1.0295,156.9368,103.37,1.0,4.744,54161,348,0.0064,0.5841
-1,저평점 장기 미방문군,18752,263.7055,237.0,1.0267,179.2018,113.855,1.0,1.8336,18509,95,0.0051,0.2022
-2,최근 구매 고평점군,19137,56.4652,52.0,1.0401,171.5778,112.42,1.0,4.618,14390,127,0.0088,0.2064
-3,희소 다중 카테고리군,668,218.3174,185.5,1.0614,271.9473,216.51,2.018,3.0591,615,11,0.0179,0.0072
