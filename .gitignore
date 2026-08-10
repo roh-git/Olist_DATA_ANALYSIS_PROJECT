@@ -1,0 +1,7 @@
+analysis/results/customer_clusters.csv
+analysis/results/deduplicated_cluster_reviews.csv
+
+# Predictive-model artifacts may exist locally from another worktree branch.
+artifacts/
+__pycache__/
+*.pyc

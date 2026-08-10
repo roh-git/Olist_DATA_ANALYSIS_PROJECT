@@ -1,5 +1,7 @@
 # Olist 분석 코드 및 스토리라인 검토 보고서
 
+> **후속 반영 상태:** 이 문서는 최초 노트북과 초안 스토리라인을 검토한 기록이다. 지적 사항을 반영한 재분석 결과와 최신 수치는 `analysis/results/ANALYSIS_RESULTS.md`, 최신 서술은 `STORYLINE_REVISED.md`를 기준으로 한다. 수정된 주문 단위 결제액과 군집 검증 결과, 최종 군집 수는 4개이며 기존의 Cluster 2·3 번호와 수치는 더 이상 사용하지 않는다.
+
 ## 1. 검토 대상
 
 - `main` 브랜치의 `Olist_Analysis.ipynb`
