@@ -1,0 +1,440 @@
+{
+  "data_quality": {
+    "unique_orders": 98202,
+    "order_rows": 98202,
+    "order_id_is_unique": true,
+    "customers": 94986,
+    "customers_with_review": 94042,
+    "review_coverage": 0.9900616933021709,
+    "repeat_customer_rate": 0.030393952793043185,
+    "multi_category_rate": 0.00712736613816773,
+    "monetary_total": 15738448.91,
+    "included_order_payment_total": 15738448.91,
+    "raw_payment_total": 16008872.120000001
+  },
+  "clustering": {
+    "selection": {
+      "selected_k": 4,
+      "selection_rule": "highest geometric mean of normalized elbow strength and silhouette retention among solutions with min cluster >= 300",
+      "elbow_k": 5,
+      "silhouette_k": 2,
+      "modeled_customers": 92718,
+      "excluded_without_first_review": 944,
+      "excluded_missing_first_category": 1321,
+      "monetary_cap_p99_for_distance_only": 1098.6769999999976
+    },
+    "validation": [
+      {
+        "k": 2,
+        "inertia": 294673.72673674347,
+        "silhouette": 0.36496931995963083,
+        "davies_bouldin": 1.428670528861278,
+        "calinski_harabasz": 23975.00573820148,
+        "smallest_cluster": 20779,
+        "inertia_drop_pct": NaN,
+        "elbow_distance": 0.0,
+        "elbow_strength": 0.0,
+        "silhouette_retention": 1.0,
+        "elbow_silhouette_score": 0.0
+      },
+      {
+        "k": 3,
+        "inertia": 204158.19985319587,
+        "silhouette": 0.35007983815093,
+        "davies_bouldin": 0.9302037669872663,
+        "calinski_harabasz": 37855.132702807954,
+        "smallest_cluster": 668,
+        "inertia_drop_pct": 30.71720301837858,
+        "elbow_distance": 0.25399091051607126,
+        "elbow_strength": 0.7097781847653664,
+        "silhouette_retention": 0.9592034700057864,
+        "elbow_silhouette_score": 0.8251192021528451
+      },
+      {
+        "k": 4,
+        "inertia": 149300.75261700648,
+        "silhouette": 0.3520183481603716,
+        "davies_bouldin": 0.9005478314403073,
+        "calinski_harabasz": 45864.95702822525,
+        "smallest_cluster": 668,
+        "inertia_drop_pct": 26.87006805292942,
+        "elbow_distance": 0.34226614872826483,
+        "elbow_strength": 0.9564635413817659,
+        "silhouette_retention": 0.9645149027850018,
+        "elbow_silhouette_score": 0.9604807856658208
+      },
+      {
+        "k": 5,
+        "inertia": 110085.74064384264,
+        "silhouette": 0.33212767024391016,
+        "davies_bouldin": 0.8209788524368348,
+        "calinski_harabasz": 54907.99951771545,
+        "smallest_cluster": 668,
+        "inertia_drop_pct": 26.265783183129756,
+        "elbow_distance": 0.35784547337142214,
+        "elbow_strength": 1.0,
+        "silhouette_retention": 0.9100153138369185,
+        "elbow_silhouette_score": 0.9539472280146939
+      },
+      {
+        "k": 6,
+        "inertia": 97811.69505970874,
+        "silhouette": 0.290960135042902,
+        "davies_bouldin": 0.9143140587240232,
+        "calinski_harabasz": 51765.10745182469,
+        "smallest_cluster": 668,
+        "inertia_drop_pct": 11.149532639148774,
+        "elbow_distance": 0.24822062544481438,
+        "elbow_strength": 0.6936531098359773,
+        "silhouette_retention": 0.7972180650008748,
+        "elbow_silhouette_score": 0.7436348499130988
+      },
+      {
+        "k": 7,
+        "inertia": 88228.6704818209,
+        "silhouette": 0.28334062432004054,
+        "davies_bouldin": 1.0200507473034384,
+        "calinski_harabasz": 49500.77490925228,
+        "smallest_cluster": 668,
+        "inertia_drop_pct": 9.797422048598515,
+        "elbow_distance": 0.12608965381092602,
+        "elbow_strength": 0.352357828151294,
+        "silhouette_retention": 0.7763409383325173,
+        "elbow_silhouette_score": 0.5230198915297424
+      },
+      {
+        "k": 8,
+        "inertia": 79497.46035458165,
+        "silhouette": 0.2764505340966902,
+        "davies_bouldin": 1.010233636559838,
+        "calinski_harabasz": 48543.81722971287,
+        "smallest_cluster": 668,
+        "inertia_drop_pct": 9.896114357790609,
+        "elbow_distance": 0.0,
+        "elbow_strength": 0.0,
+        "silhouette_retention": 0.7574623919820667,
+        "elbow_silhouette_score": 0.0
+      }
+    ]
+  },
+  "cluster_profile": [
+    {
+      "Cluster": 0,
+      "Segment": "고평점 장기 미방문군",
+      "customers": 54161,
+      "recency_mean": 301.1023,
+      "recency_median": 281.0,
+      "frequency_mean": 1.0295,
+      "monetary_mean": 156.9368,
+      "monetary_median": 103.37,
+      "category_count_mean": 1.0,
+      "review_score_mean": 4.744,
+      "customer_share": 0.5841
+    },
+    {
+      "Cluster": 1,
+      "Segment": "저평점 장기 미방문군",
+      "customers": 18752,
+      "recency_mean": 263.7055,
+      "recency_median": 237.0,
+      "frequency_mean": 1.0267,
+      "monetary_mean": 179.2018,
+      "monetary_median": 113.855,
+      "category_count_mean": 1.0,
+      "review_score_mean": 1.8336,
+      "customer_share": 0.2022
+    },
+    {
+      "Cluster": 2,
+      "Segment": "최근 구매 고평점군",
+      "customers": 19137,
+      "recency_mean": 56.4652,
+      "recency_median": 52.0,
+      "frequency_mean": 1.0401,
+      "monetary_mean": 171.5778,
+      "monetary_median": 112.42,
+      "category_count_mean": 1.0,
+      "review_score_mean": 4.618,
+      "customer_share": 0.2064
+    },
+    {
+      "Cluster": 3,
+      "Segment": "희소 다중 카테고리군",
+      "customers": 668,
+      "recency_mean": 218.3174,
+      "recency_median": 185.5,
+      "frequency_mean": 1.0614,
+      "monetary_mean": 271.9473,
+      "monetary_median": 216.51,
+      "category_count_mean": 2.018,
+      "review_score_mean": 3.0591,
+      "customer_share": 0.0072
+    }
+  ],
+  "review_audit": {
+    "unique_cluster_reviews": 95573,
+    "low_score_text_reviews": 9818,
+    "low_score_customers": 9764,
+    "coded_issue_reviews": 4952,
+    "coded_issue_coverage": 0.504379710735384,
+    "counting_note": "Issue categories are multi-label; category totals may exceed review totals."
+  },
+  "review_issue_summary": [
+    {
+      "Cluster": 0,
+      "Segment": "고평점 장기 미방문군",
+      "issue": "미수령",
+      "low_score_text_reviews": 109,
+      "issue_reviews": 34,
+      "issue_rate": 0.3119266055045872
+    },
+    {
+      "Cluster": 0,
+      "Segment": "고평점 장기 미방문군",
+      "issue": "부분배송_누락",
+      "low_score_text_reviews": 109,
+      "issue_reviews": 8,
+      "issue_rate": 0.07339449541284404
+    },
+    {
+      "Cluster": 0,
+      "Segment": "고평점 장기 미방문군",
+      "issue": "배송지연",
+      "low_score_text_reviews": 109,
+      "issue_reviews": 7,
+      "issue_rate": 0.06422018348623854
+    },
+    {
+      "Cluster": 0,
+      "Segment": "고평점 장기 미방문군",
+      "issue": "배송완료_오표시",
+      "low_score_text_reviews": 109,
+      "issue_reviews": 0,
+      "issue_rate": 0.0
+    },
+    {
+      "Cluster": 0,
+      "Segment": "고평점 장기 미방문군",
+      "issue": "오배송",
+      "low_score_text_reviews": 109,
+      "issue_reviews": 0,
+      "issue_rate": 0.0
+    },
+    {
+      "Cluster": 0,
+      "Segment": "고평점 장기 미방문군",
+      "issue": "파손_불량",
+      "low_score_text_reviews": 109,
+      "issue_reviews": 1,
+      "issue_rate": 0.009174311926605505
+    },
+    {
+      "Cluster": 0,
+      "Segment": "고평점 장기 미방문군",
+      "issue": "품질불만",
+      "low_score_text_reviews": 109,
+      "issue_reviews": 2,
+      "issue_rate": 0.01834862385321101
+    },
+    {
+      "Cluster": 0,
+      "Segment": "고평점 장기 미방문군",
+      "issue": "환불_CS",
+      "low_score_text_reviews": 109,
+      "issue_reviews": 2,
+      "issue_rate": 0.01834862385321101
+    },
+    {
+      "Cluster": 1,
+      "Segment": "저평점 장기 미방문군",
+      "issue": "미수령",
+      "low_score_text_reviews": 9248,
+      "issue_reviews": 2405,
+      "issue_rate": 0.2600562283737024
+    },
+    {
+      "Cluster": 1,
+      "Segment": "저평점 장기 미방문군",
+      "issue": "부분배송_누락",
+      "low_score_text_reviews": 9248,
+      "issue_reviews": 868,
+      "issue_rate": 0.09385813148788927
+    },
+    {
+      "Cluster": 1,
+      "Segment": "저평점 장기 미방문군",
+      "issue": "배송지연",
+      "low_score_text_reviews": 9248,
+      "issue_reviews": 637,
+      "issue_rate": 0.06887975778546712
+    },
+    {
+      "Cluster": 1,
+      "Segment": "저평점 장기 미방문군",
+      "issue": "배송완료_오표시",
+      "low_score_text_reviews": 9248,
+      "issue_reviews": 163,
+      "issue_rate": 0.017625432525951557
+    },
+    {
+      "Cluster": 1,
+      "Segment": "저평점 장기 미방문군",
+      "issue": "오배송",
+      "low_score_text_reviews": 9248,
+      "issue_reviews": 185,
+      "issue_rate": 0.020004325259515572
+    },
+    {
+      "Cluster": 1,
+      "Segment": "저평점 장기 미방문군",
+      "issue": "파손_불량",
+      "low_score_text_reviews": 9248,
+      "issue_reviews": 546,
+      "issue_rate": 0.059039792387543255
+    },
+    {
+      "Cluster": 1,
+      "Segment": "저평점 장기 미방문군",
+      "issue": "품질불만",
+      "low_score_text_reviews": 9248,
+      "issue_reviews": 409,
+      "issue_rate": 0.0442257785467128
+    },
+    {
+      "Cluster": 1,
+      "Segment": "저평점 장기 미방문군",
+      "issue": "환불_CS",
+      "low_score_text_reviews": 9248,
+      "issue_reviews": 475,
+      "issue_rate": 0.05136245674740485
+    },
+    {
+      "Cluster": 2,
+      "Segment": "최근 구매 고평점군",
+      "issue": "미수령",
+      "low_score_text_reviews": 218,
+      "issue_reviews": 37,
+      "issue_rate": 0.16972477064220184
+    },
+    {
+      "Cluster": 2,
+      "Segment": "최근 구매 고평점군",
+      "issue": "부분배송_누락",
+      "low_score_text_reviews": 218,
+      "issue_reviews": 14,
+      "issue_rate": 0.06422018348623854
+    },
+    {
+      "Cluster": 2,
+      "Segment": "최근 구매 고평점군",
+      "issue": "배송지연",
+      "low_score_text_reviews": 218,
+      "issue_reviews": 6,
+      "issue_rate": 0.027522935779816515
+    },
+    {
+      "Cluster": 2,
+      "Segment": "최근 구매 고평점군",
+      "issue": "배송완료_오표시",
+      "low_score_text_reviews": 218,
+      "issue_reviews": 5,
+      "issue_rate": 0.022935779816513763
+    },
+    {
+      "Cluster": 2,
+      "Segment": "최근 구매 고평점군",
+      "issue": "오배송",
+      "low_score_text_reviews": 218,
+      "issue_reviews": 2,
+      "issue_rate": 0.009174311926605505
+    },
+    {
+      "Cluster": 2,
+      "Segment": "최근 구매 고평점군",
+      "issue": "파손_불량",
+      "low_score_text_reviews": 218,
+      "issue_reviews": 22,
+      "issue_rate": 0.10091743119266056
+    },
+    {
+      "Cluster": 2,
+      "Segment": "최근 구매 고평점군",
+      "issue": "품질불만",
+      "low_score_text_reviews": 218,
+      "issue_reviews": 11,
+      "issue_rate": 0.05045871559633028
+    },
+    {
+      "Cluster": 2,
+      "Segment": "최근 구매 고평점군",
+      "issue": "환불_CS",
+      "low_score_text_reviews": 218,
+      "issue_reviews": 15,
+      "issue_rate": 0.06880733944954129
+    },
+    {
+      "Cluster": 3,
+      "Segment": "희소 다중 카테고리군",
+      "issue": "미수령",
+      "low_score_text_reviews": 243,
+      "issue_reviews": 97,
+      "issue_rate": 0.3991769547325103
+    },
+    {
+      "Cluster": 3,
+      "Segment": "희소 다중 카테고리군",
+      "issue": "부분배송_누락",
+      "low_score_text_reviews": 243,
+      "issue_reviews": 66,
+      "issue_rate": 0.2716049382716049
+    },
+    {
+      "Cluster": 3,
+      "Segment": "희소 다중 카테고리군",
+      "issue": "배송지연",
+      "low_score_text_reviews": 243,
+      "issue_reviews": 4,
+      "issue_rate": 0.01646090534979424
+    },
+    {
+      "Cluster": 3,
+      "Segment": "희소 다중 카테고리군",
+      "issue": "배송완료_오표시",
+      "low_score_text_reviews": 243,
+      "issue_reviews": 18,
+      "issue_rate": 0.07407407407407407
+    },
+    {
+      "Cluster": 3,
+      "Segment": "희소 다중 카테고리군",
+      "issue": "오배송",
+      "low_score_text_reviews": 243,
+      "issue_reviews": 2,
+      "issue_rate": 0.00823045267489712
+    },
+    {
+      "Cluster": 3,
+      "Segment": "희소 다중 카테고리군",
+      "issue": "파손_불량",
+      "low_score_text_reviews": 243,
+      "issue_reviews": 5,
+      "issue_rate": 0.0205761316872428
+    },
+    {
+      "Cluster": 3,
+      "Segment": "희소 다중 카테고리군",
+      "issue": "품질불만",
+      "low_score_text_reviews": 243,
+      "issue_reviews": 3,
+      "issue_rate": 0.012345679012345678
+    },
+    {
+      "Cluster": 3,
+      "Segment": "희소 다중 카테고리군",
+      "issue": "환불_CS",
+      "low_score_text_reviews": 243,
+      "issue_reviews": 8,
+      "issue_rate": 0.03292181069958848
+    }
+  ]
+}
