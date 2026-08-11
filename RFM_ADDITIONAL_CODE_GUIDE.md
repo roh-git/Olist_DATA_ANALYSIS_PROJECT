@@ -119,6 +119,15 @@ order_payment = order_payments_df.groupby('order_id', as_index=False).agg(
 
 주문 단위로 결제액을 먼저 합치면 실제 합계인 100헤알을 유지할 수 있습니다.
 
+실행 후 `order_payment`는 **주문 한 건당 한 행**인 다음 형태가 됩니다. 아래 값은 구조를 설명하기 위한 축약 예시입니다.
+
+| order_id | order_payment |
+|---|---:|
+| order_A | 100.00 |
+| order_B | 75.50 |
+
+원본 결제 테이블에 `order_A`가 카드 70헤알과 쿠폰 30헤알의 두 행으로 존재해도 결과에는 합계 100헤알인 한 행만 남습니다.
+
 ### 3.4 주문별 카테고리 수 계산
 
 ```python
@@ -137,6 +146,22 @@ order_item_features = item_category.groupby('order_id', as_index=False).agg(
 가구, 가구, 생활용품 → 카테고리 수 2개
 ```
 
+상품 정보를 연결한 직후의 `item_category`는 상품 단위라 같은 주문이 여러 행일 수 있습니다.
+
+| order_id | product_id | product_category_name |
+|---|---|---|
+| order_A | product_1 | 가구 |
+| order_A | product_2 | 가구 |
+| order_A | product_3 | 생활용품 |
+
+이를 주문별로 집계한 `order_item_features`는 다음처럼 바뀝니다.
+
+| order_id | category_count |
+|---|---:|
+| order_A | 2 |
+
+즉 세 상품을 샀더라도 서로 다른 카테고리가 두 종류이면 `category_count=2`입니다.
+
 ### 3.5 리뷰 중복 제거 및 주문별 평점 계산
 
 ```python
@@ -148,13 +173,42 @@ order_review = order_reviews_df.drop_duplicates('review_id') \
 
 같은 리뷰가 상품이나 결제 행 때문에 반복되지 않도록 `review_id` 기준으로 중복을 제거합니다. 주문에 리뷰가 여러 개라면 평균 점수를 사용합니다.
 
+집계된 `order_review`의 모습은 다음과 같습니다.
+
+| order_id | review_score |
+|---|---:|
+| order_A | 4.0 |
+| order_B | 2.0 |
+
+이 표 역시 주문 한 건당 최대 한 행입니다. 리뷰가 없는 주문은 이후 병합 결과에서 `review_score`가 빈 값으로 나타납니다.
+
 ### 3.6 정리한 표 연결
 
 ```python
 order_level = (
-    orders_clean.merge(..., validate='many_to_one')
-    .merge(..., validate='one_to_one')
-    .merge(..., validate='one_to_one')
+    orders_clean.merge(
+        customer_df[['customer_id', 'customer_unique_id']],
+        on='customer_id',
+        validate='many_to_one'
+    )
+    .merge(
+        order_payment,
+        on='order_id',
+        how='left',
+        validate='one_to_one'
+    )
+    .merge(
+        order_item_features,
+        on='order_id',
+        how='left',
+        validate='one_to_one'
+    )
+    .merge(
+        order_review,
+        on='order_id',
+        how='left',
+        validate='one_to_one'
+    )
 )
 ```
 
@@ -164,6 +218,16 @@ order_level = (
 |---|---|
 | `many_to_one` | 여러 주문이 한 고객에게 연결될 수 있음 |
 | `one_to_one` | 주문 하나는 집계 결과 한 행에만 연결돼야 함 |
+
+모든 정보를 합친 `order_level`의 핵심 컬럼은 다음과 같습니다.
+
+| order_id | customer_unique_id | order_purchase_timestamp | order_payment | category_count | review_score |
+|---|---|---|---:|---:|---:|
+| order_A | customer_1 | 2018-01-10 10:00 | 100.00 | 2 | 4.0 |
+| order_B | customer_1 | 2018-02-03 14:30 | 75.50 | 1 | 2.0 |
+| order_C | customer_2 | 2018-02-05 09:10 | 42.00 | 1 | 5.0 |
+
+`customer_1`이 두 번 등장하는 것은 정상입니다. 이 표의 행 기준은 고객이 아니라 **주문**이기 때문입니다. 중요한 점은 같은 `order_id`가 두 번 등장하지 않는다는 것입니다.
 
 ### 3.7 주문 ID 중복 검사
 
@@ -202,6 +266,15 @@ rfm = order_level.groupby('customer_unique_id', as_index=False).agg(
 
 Olist 고객은 대부분 한 번만 구매하여 Frequency가 거의 1에 몰려 있습니다. 그래서 최종 K-Means 입력에서는 Frequency를 제외하지만 군집 설명용 참고 지표로는 유지합니다.
 
+`order_level`을 고객별로 집계한 `rfm`은 **고객 한 명당 한 행**으로 바뀝니다.
+
+| customer_unique_id | Recency | Frequency | Monetary |
+|---|---:|---:|---:|
+| customer_1 | 25 | 2 | 175.50 |
+| customer_2 | 23 | 1 | 42.00 |
+
+앞의 예시에서 두 주문을 가진 `customer_1`은 Frequency가 2이고 Monetary는 100.00 + 75.50 = 175.50입니다.
+
 ---
 
 ## 5. 첫 주문 특성 선택
@@ -217,6 +290,15 @@ first_order = (
 
 고객의 주문을 시간순으로 정렬한 뒤 첫 번째 주문만 남겨 첫 주문 카테고리 수와 첫 리뷰 점수를 가져옵니다. 이 방식은 이후 주문의 정보가 첫 주문에 섞이는 데이터 누수를 막습니다.
 
+`first_order`는 다음처럼 고객별 최초 주문의 특성만 남습니다.
+
+| customer_unique_id | category_count | review_score |
+|---|---:|---:|
+| customer_1 | 2 | 4.0 |
+| customer_2 | 1 | 5.0 |
+
+`customer_1`의 두 번째 주문 평점 2점은 이 표에 들어가지 않습니다.
+
 ---
 
 ## 6. 30일 이내 재구매 여부 계산
@@ -230,6 +312,14 @@ purchase_dates = order_level.assign(
 ```
 
 시간·분·초를 제거해 날짜만 남기고 같은 고객이 같은 날 만든 주문은 한 구매일로 처리합니다. 같은 날의 주문 분할이나 분리 결제를 재구매로 잘못 세는 것을 줄이기 위한 조치입니다.
+
+`purchase_dates`의 행 기준은 **고객별 고유 구매일**입니다.
+
+| customer_unique_id | purchase_date |
+|---|---|
+| customer_1 | 2018-01-10 |
+| customer_1 | 2018-02-03 |
+| customer_2 | 2018-02-05 |
 
 ### 6.2 첫 구매일부터 지난 일수 계산
 
@@ -266,6 +356,16 @@ repurchase_30d['target_30d_eligible'] = (
 
 데이터 종료 직전에 처음 구매한 고객은 30일 동안 재구매할 기회가 없습니다. 이 고객을 비재구매자로 처리하지 않도록 데이터 종료일보다 최소 30일 전에 첫 구매한 고객만 30일 재구매율 계산에 사용합니다.
 
+최종 `repurchase_30d`는 고객별로 다음과 같은 모습입니다.
+
+| customer_unique_id | first_purchase_date | target_30d | target_30d_eligible |
+|---|---|---|---|
+| customer_1 | 2018-01-10 | True | True |
+| customer_2 | 2018-02-05 | False | True |
+| customer_3 | 데이터 종료 10일 전 | False | False |
+
+`customer_3`은 재구매하지 않은 고객으로 확정한 것이 아니라 관찰 기간이 부족한 고객입니다. 따라서 30일 재구매율의 분모에서 빠집니다.
+
 ---
 
 ## 7. 군집 분석용 고객 표 만들기
@@ -279,6 +379,13 @@ customer_features = (
 
 RFM, 첫 주문 특성, 재구매 여부를 고객 한 명당 한 행인 표로 합칩니다.
 
+병합된 `customer_features`는 군집 분석 전 고객 마스터 테이블에 해당합니다.
+
+| customer_unique_id | Recency | Frequency | Monetary | category_count | review_score | target_30d | target_30d_eligible |
+|---|---:|---:|---:|---:|---:|---|---|
+| customer_1 | 25 | 2 | 175.50 | 2 | 4.0 | True | True |
+| customer_2 | 23 | 1 | 42.00 | 1 | 5.0 | False | True |
+
 ```python
 clustered = customer_features.dropna(
     subset=['Recency', 'Monetary', 'category_count', 'review_score']
@@ -286,6 +393,8 @@ clustered = customer_features.dropna(
 ```
 
 K-Means는 빈 값을 바로 처리할 수 없습니다. 카테고리 수가 0인 경우도 실제 미구매보다 상품 정보 누락일 가능성이 있어 제외합니다. 따라서 군집 결과는 첫 주문 리뷰와 카테고리 정보가 모두 있는 고객에 대한 결과입니다.
+
+`clustered`는 `customer_features`와 컬럼 구조가 거의 같지만, 군집 입력에 필요한 값이 모두 존재하는 고객만 남은 표입니다. 실제 데이터에서는 전체 고객 94,986명 중 92,718명이 이 표에 포함됩니다.
 
 ---
 
@@ -329,6 +438,16 @@ Recency와 Monetary처럼 값의 범위가 크고 한쪽으로 치우친 변수�
 Monetary는 수백 단위이고 리뷰는 1~5점입니다. 그대로 거리를 계산하면 금액이 결과를 거의 결정합니다. `StandardScaler`는 각 변수를 평균 0, 표준편차 1의 공통 척도로 바꿉니다.
 
 키는 cm, 몸무게는 kg인 서로 다른 단위를 “평균에서 얼마나 떨어져 있는가”라는 같은 기준으로 바꾸는 것과 비슷합니다.
+
+변환 단계의 표 모양은 다음처럼 이해할 수 있습니다.
+
+| 단계 | Recency | Monetary | category_count | review_score |
+|---|---:|---:|---:|---:|
+| 원본 고객 값 | 300일 | 1,000헤알 | 2개 | 4점 |
+| 로그 변환 후 | 5.71 | 6.91 | 1.10 | 4.00 |
+| 표준화 후 예시 | 0.85 | 1.42 | 3.10 | 0.45 |
+
+표준화 결과인 `scaled_features`는 컬럼명이 없는 숫자 배열이지만 열의 순서는 `Recency`, `Monetary`, `category_count`, `review_score`와 동일합니다. 표준화 후 숫자는 원래 단위가 아니라 평균에서 떨어진 정도를 나타냅니다.
 
 ---
 
@@ -438,6 +557,16 @@ k_validation['combined_score'] = np.sqrt(
 
 두 기준 사이에서 결합 점수가 가장 높은 `k=4`를 선택합니다. k=4와 k=5의 차이는 작으므로 k=4를 절대적인 정답이 아니라 현재 기준에서 가장 균형적인 값으로 이해해야 합니다.
 
+계산이 끝난 `k_validation`은 후보 k마다 한 행인 표입니다.
+
+| k | inertia | silhouette | smallest_cluster | elbow_strength | silhouette_retention | combined_score |
+|---:|---:|---:|---:|---:|---:|---:|
+| 3 | 204,158.20 | 0.3501 | 668 | 0.7098 | 0.9592 | 0.8251 |
+| 4 | 149,300.75 | 0.3520 | 668 | 0.9565 | 0.9645 | **0.9605** |
+| 5 | 110,085.74 | 0.3321 | 668 | 1.0000 | 0.9100 | 0.9539 |
+
+노트북에서는 `k=2~8` 전체 행이 출력되며 이 표에서 결합 점수가 가장 높은 행의 `k`를 선택합니다.
+
 ```python
 eligible_k = k_validation[k_validation['smallest_cluster'] >= 300]
 ```
@@ -467,6 +596,15 @@ cluster_profile = clustered.groupby('Cluster', as_index=False).agg(
 
 각 군집의 고객 수와 평균 구매 특성을 계산합니다.
 
+`clustered`에는 기존 고객 특성 옆에 `Cluster` 열이 추가됩니다.
+
+| customer_unique_id | Recency | Monetary | category_count | review_score | Cluster |
+|---|---:|---:|---:|---:|---:|
+| customer_1 | 25 | 175.50 | 2 | 4.0 | 3 |
+| customer_2 | 23 | 42.00 | 1 | 5.0 | 2 |
+
+이를 군집별로 다시 집계한 표가 `cluster_profile`입니다.
+
 | 군집 | 설명형 이름 | 고객 수 | 핵심 특징 |
 |---:|---|---:|---|
 | 0 | 고평점 장기 미방문군 | 54,161명 | 평점은 높지만 마지막 구매 후 약 301일 |
@@ -493,6 +631,17 @@ repurchase_profile = (
 ```
 
 30일의 관찰 기회가 충분한 고객만 사용해 군집별 분석 가능 고객 수, 실제 재구매 고객 수, 재구매율을 계산합니다.
+
+`repurchase_profile`의 실제 결과 형태는 다음과 같습니다.
+
+| Cluster | target_30d_eligible_customers | target_30d_repurchase_customers | target_30d_repurchase_rate |
+|---:|---:|---:|---:|
+| 0 | 54,161 | 348 | 0.64% |
+| 1 | 18,509 | 95 | 0.51% |
+| 2 | 14,390 | 127 | 0.88% |
+| 3 | 615 | 11 | 1.79% |
+
+이 표를 `cluster_profile`에 `Cluster` 기준으로 병합하면 고객 특성과 재구매 현황을 한 표에서 함께 볼 수 있습니다.
 
 Cluster 3의 재구매율은 약 1.79%로 상대적으로 높지만 실제 재구매 고객은 11명뿐입니다. 표본이 작으면 몇 명 차이로 비율이 크게 변하므로 일반화하면 안 됩니다.
 
