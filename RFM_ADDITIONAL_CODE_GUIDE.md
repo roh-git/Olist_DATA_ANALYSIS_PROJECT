@@ -313,6 +313,120 @@ purchase_dates = order_level.assign(
 
 시간·분·초를 제거해 날짜만 남기고 같은 고객이 같은 날 만든 주문은 한 구매일로 처리합니다. 같은 날의 주문 분할이나 분리 결제를 재구매로 잘못 세는 것을 줄이기 위한 조치입니다.
 
+#### 코드를 문법 단위로 나눠 보기
+
+위 코드는 여러 작업을 한 줄로 연결한 **메서드 체이닝**입니다. 아래처럼 단계별로 나누면 같은 결과가 만들어집니다.
+
+```python
+# 1단계: 주문 시각에서 시간 부분을 00:00:00으로 맞춘 Series 생성
+normalized_dates = order_level['order_purchase_timestamp'].dt.normalize()
+
+# 2단계: order_level을 복사하면서 purchase_date 열 추가
+orders_with_purchase_date = order_level.assign(
+    purchase_date=normalized_dates
+)
+
+# 3단계: 분석에 필요한 두 열만 DataFrame 형태로 선택
+customer_purchase_dates = orders_with_purchase_date[
+    ['customer_unique_id', 'purchase_date']
+]
+
+# 4단계: 같은 고객과 같은 구매일의 중복 행 제거
+purchase_dates = customer_purchase_dates.drop_duplicates()
+```
+
+##### `order_level['order_purchase_timestamp']`
+
+`order_level`에서 `order_purchase_timestamp` 한 열을 선택합니다. 대괄호 안에 하나의 컬럼명을 문자열로 넣었으므로 반환값은 1차원 `Series`입니다.
+
+```text
+0   2018-01-10 10:15:23
+1   2018-01-10 16:42:05
+2   2018-02-03 14:30:00
+Name: order_purchase_timestamp, dtype: datetime64[ns]
+```
+
+##### `.dt`
+
+`.dt`는 pandas의 날짜·시간 전용 접근자입니다. `Series` 안의 각 날짜 값에 날짜 관련 함수나 속성을 적용할 수 있게 해줍니다.
+
+```python
+order_level['order_purchase_timestamp'].dt.year       # 연도
+order_level['order_purchase_timestamp'].dt.month      # 월
+order_level['order_purchase_timestamp'].dt.day        # 일
+order_level['order_purchase_timestamp'].dt.normalize() # 시간을 자정으로 변경
+```
+
+`.dt` 자체가 값을 바꾸는 함수는 아니며, 뒤에 붙는 `year`, `month`, `normalize()` 같은 날짜 기능으로 연결해주는 역할을 합니다. 해당 열이 문자열이면 `.dt`를 사용할 수 없으므로 앞 단계에서 `pd.to_datetime()`으로 변환해야 합니다.
+
+##### `.normalize()`
+
+`normalize()`는 각 날짜·시간 값의 연·월·일은 유지하고 시·분·초를 `00:00:00`으로 바꿉니다.
+
+| 변환 전 | 변환 후 |
+|---|---|
+| 2018-01-10 10:15:23 | 2018-01-10 00:00:00 |
+| 2018-01-10 16:42:05 | 2018-01-10 00:00:00 |
+| 2018-02-03 14:30:00 | 2018-02-03 00:00:00 |
+
+화면에는 `2018-01-10`처럼 날짜만 표시될 수 있지만 내부 자료형은 날짜·시간형인 `datetime64[ns]`로 유지됩니다. 문자열이나 Python의 `date` 객체로 바꾸는 작업은 아닙니다. 따라서 이후 날짜 차이 계산을 그대로 수행할 수 있습니다.
+
+##### `.assign(purchase_date=normalized_dates)`
+
+`assign()`은 DataFrame에 새 열을 추가한 **새 DataFrame을 반환**합니다. 이 코드에서는 `normalized_dates`를 `purchase_date`라는 이름의 열로 추가합니다.
+
+```python
+orders_with_purchase_date = order_level.assign(
+    purchase_date=normalized_dates
+)
+```
+
+| customer_unique_id | order_purchase_timestamp | purchase_date |
+|---|---|---|
+| customer_1 | 2018-01-10 10:15:23 | 2018-01-10 00:00:00 |
+| customer_1 | 2018-01-10 16:42:05 | 2018-01-10 00:00:00 |
+| customer_1 | 2018-02-03 14:30:00 | 2018-02-03 00:00:00 |
+
+원본 `order_level`을 직접 수정하지 않는다는 점이 `order_level['purchase_date'] = normalized_dates` 방식과의 차이입니다. 반환된 결과를 변수에 저장해야 새 열을 계속 사용할 수 있습니다.
+
+##### `[['customer_unique_id', 'purchase_date']]`
+
+이중 대괄호는 여러 열을 선택할 때 사용합니다. 바깥 대괄호는 DataFrame 선택 문법이고, 안쪽 대괄호는 선택할 컬럼명의 리스트입니다.
+
+```python
+# Series 반환: 대괄호 한 쌍과 컬럼명 하나
+order_level['customer_unique_id']
+
+# DataFrame 반환: 대괄호 안에 컬럼명 리스트
+order_level[['customer_unique_id', 'purchase_date']]
+```
+
+이 단계에서 주문 ID, 결제액, 리뷰 점수 등은 제외되고 고객 ID와 정규화된 구매일만 남습니다.
+
+##### `.drop_duplicates()`
+
+`drop_duplicates()`는 선택된 모든 열의 값이 동일한 중복 행을 제거하고 첫 번째 행만 남깁니다. 이 시점에는 두 열만 존재하므로 `customer_unique_id`와 `purchase_date`의 조합을 기준으로 중복을 판단합니다.
+
+| customer_unique_id | purchase_date | 처리 결과 |
+|---|---|---|
+| customer_1 | 2018-01-10 | 유지 |
+| customer_1 | 2018-01-10 | 중복 제거 |
+| customer_1 | 2018-02-03 | 유지 |
+| customer_2 | 2018-01-10 | 유지 |
+
+날짜가 같아도 고객이 다르면 다른 구매 기록이므로 유지됩니다. 고객이 같아도 날짜가 다르면 역시 별개의 구매일로 유지됩니다.
+
+#### 전체 변화 요약
+
+```text
+주문별 날짜·시간
+→ normalize()로 시간 제거
+→ assign()으로 purchase_date 열 추가
+→ 필요한 고객 ID와 구매일 열만 선택
+→ drop_duplicates()로 고객별 같은 날짜 중복 제거
+→ 고객별 고유 구매일 표 완성
+```
+
 `purchase_dates`의 행 기준은 **고객별 고유 구매일**입니다.
 
 | customer_unique_id | purchase_date |
