@@ -81,13 +81,13 @@ Recency, Monetary, 카테고리 수에는 로그 변환을 적용하고 모든 �
 
 ## 저장소 정리
 
-중복 분석 경로를 없애기 위해 `analysis` 폴더 전체를 제거했다. 필요한 분석 코드, 그래프, 프로필과 해설은 `Olist_Analysis.ipynb`에 통합했고 최신 서술은 `STORYLINE_REVISED.md`에 유지했다.
+중복 분석 경로를 없애기 위해 `analysis` 폴더 전체를 제거했다. 필요한 분석 코드, 그래프, 프로필과 해설은 `Olist_Analysis.ipynb`에 통합했고 최신 서술은 `docs/STORYLINE_REVISED.md`에 유지했다.
 
 팀원이 확인할 기준 파일은 다음과 같다.
 
 - `Olist_Analysis.ipynb`: 실행 가능한 기본 분석
-- `STORYLINE_REVISED.md`: 검증 결과를 반영한 스토리라인
-- `STORYLINE_ANALYSIS_REVIEW.md`: 최초 리뷰 및 수정 근거
+- `docs/STORYLINE_REVISED.md`: 검증 결과를 반영한 스토리라인
+- `docs/STORYLINE_ANALYSIS_REVIEW.md`: 최초 리뷰 및 수정 근거
 - `ANALYSIS_CHANGELOG.md`: 이번 변경 범위와 해설
 
 ## 검증 내용
@@ -125,8 +125,24 @@ Recency, Monetary, 카테고리 수에는 로그 변환을 적용하고 모든 �
 - 시각화와 회귀 결과는 관찰 데이터의 연관성이며 인과효과로 표현하지 않았다.
 - Pseudo R²가 낮은 점을 명시해 현재 변수가 재구매 행동을 충분히 설명하거나 예측하지 못한다는 한계를 유지했다.
 - 가설별 EDA는 현재 보고서에 포함하고, 고객·주문 기초 분포와 관찰 기간 관련 EDA는 추후 보완 항목으로 분리했다.
-- 포트폴리오 보고서의 고객군 수치와 리뷰 분석 수치는 최신 `STORYLINE_REVISED.md`와 일치 여부를 확인했다.
+- 포트폴리오 보고서의 고객군 수치와 리뷰 분석 수치는 최신 `docs/STORYLINE_REVISED.md`와 일치 여부를 확인했다.
 
 ### 커밋 제외 파일
 
 리뷰 번역·형태소 및 Tableau 워드클라우드용 CSV는 분석 중간 산출물로 남겨두되 이번 문서 커밋에는 포함하지 않았다.
+
+---
+
+## Markdown 문서 구조 정리 (2026-08-13)
+
+- 작업 브랜치: `docs/organize-markdown`
+- 루트에는 `ANALYSIS_CHANGELOG.md`와 `PORTFOLIO_FINAL_REPORT.md`만 유지했다.
+- 나머지 Markdown 문서 4개를 `docs/` 폴더로 이동했다.
+- 이동한 문서: `README.md`, `RFM_ADDITIONAL_CODE_GUIDE.md`, `STORYLINE_ANALYSIS_REVIEW.md`, `STORYLINE_REVISED.md`
+- 이동 후 README 링크와 보고서·체인지로그의 문서 경로를 새 구조에 맞게 수정했다.
+- Tableau에서 출력한 워드클라우드 PDF를 PNG로 변환해 `report_assets/low_rating_review_wordcloud.png`로 추가했다.
+- 최종 보고서의 리뷰 딥다이브에 `저평점 고객군 리뷰 텍스트 분석 — 워드클라우드` 섹션을 추가하고 이미지를 본문에 직접 삽입했다.
+- 원본 단어·색상·배치를 유지한 채 이미지의 과도한 상·하단 흰 여백을 제거했다.
+- 리뷰 핵심 발견의 미수령 해석에 배송 지연 가능성을 추가하고, 지연 후 수령·장기 지연·배송완료 오표시·부분배송을 구분하는 후속 검증 기준을 명시했다.
+- 워드클라우드 이미지의 한글 경로 호환 문제를 방지하기 위해 영문 파일명과 표준 Markdown 이미지 문법을 적용했다.
+- 미분류 리뷰 50.4%를 VOC 활용 공백으로 정의하고, 표본 검수·분류 체계 확장·저신뢰 리뷰 대기열·정밀도 및 재현율 모니터링으로 구성한 회수 전략과 KPI를 추가했다.
