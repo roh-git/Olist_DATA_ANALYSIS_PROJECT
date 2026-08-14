@@ -1,0 +1,150 @@
+@page {
+  size: A4;
+  margin: 16mm 16mm 18mm;
+}
+
+:root {
+  --ink: #1f2937;
+  --muted: #5f6b7a;
+  --line: #d9e2ec;
+  --accent: #1f5f8b;
+  --accent-soft: #edf6fb;
+  --table-head: #e7f0f6;
+}
+
+html {
+  font-size: 10pt;
+}
+
+body {
+  max-width: 920px;
+  margin: 0 auto;
+  color: var(--ink);
+  font-family: "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  line-height: 1.65;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+h1, h2, h3, h4 {
+  color: #173b57;
+  line-height: 1.35;
+  break-after: avoid-page;
+}
+
+h1 {
+  margin: 0 0 12mm;
+  padding-bottom: 5mm;
+  border-bottom: 3px solid var(--accent);
+  font-size: 25pt;
+}
+
+h2 {
+  margin-top: 12mm;
+  padding: 3.5mm 4mm;
+  border-left: 5px solid var(--accent);
+  background: var(--accent-soft);
+  font-size: 17pt;
+}
+
+h3 {
+  margin-top: 8mm;
+  padding-bottom: 2mm;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5pt;
+}
+
+h4 {
+  margin-top: 6mm;
+  font-size: 11.5pt;
+}
+
+p, li {
+  orphans: 3;
+  widows: 3;
+}
+
+blockquote {
+  margin: 6mm 0;
+  padding: 4mm 5mm;
+  border-left: 4px solid var(--accent);
+  background: var(--accent-soft);
+  color: #24445c;
+  break-inside: avoid-page;
+}
+
+table {
+  width: 100%;
+  margin: 5mm 0 7mm;
+  border-collapse: collapse;
+  font-size: 8.8pt;
+  line-height: 1.45;
+}
+
+thead {
+  display: table-header-group;
+}
+
+tr, img, pre, blockquote {
+  break-inside: avoid-page;
+}
+
+th, td {
+  padding: 2.2mm 2.5mm;
+  border: 1px solid var(--line);
+  vertical-align: top;
+}
+
+th {
+  color: #173b57;
+  background: var(--table-head);
+  font-weight: 700;
+}
+
+tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+img {
+  display: block;
+  max-width: 94%;
+  max-height: 205mm;
+  margin: 6mm auto;
+  object-fit: contain;
+}
+
+code {
+  padding: 0.15em 0.35em;
+  border-radius: 3px;
+  background: #f1f5f9;
+  font-family: Consolas, "D2Coding", monospace;
+}
+
+pre {
+  padding: 4mm;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #f8fafc;
+  white-space: pre-wrap;
+}
+
+hr {
+  margin: 10mm 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+ul, ol {
+  padding-left: 6mm;
+}
+
+@media print {
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  h2 {
+    break-before: auto;
+  }
+}
